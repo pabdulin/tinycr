@@ -22,6 +22,8 @@ main :: proc() {
 
 	running := true
 
+	draw_surface: ^sdl2.Surface = nil
+
 	for running {
 		event: sdl2.Event
 		for sdl2.PollEvent(&event) {
@@ -29,6 +31,11 @@ main :: proc() {
 			case .WINDOWEVENT:
 				#partial switch (event.window.event) {
 				case .RESIZED:
+					if (draw_surface != nil) {
+						sdl2.FreeSurface(draw_surface)
+						draw_surface = nil
+					}
+
 					width = event.window.data1
 					height = event.window.data2
 				}
@@ -38,6 +45,23 @@ main :: proc() {
 				mouse_x = event.motion.x
 				mouse_y = event.motion.y
 			}
+		}
+		// (type: u8, order: u8, layout, bits, bytes: u8) -> u32 {
+		if (draw_surface == nil) {
+			draw_surface = sdl2.CreateRGBSurfaceWithFormat(
+				0,
+				width,
+				height,
+				32,
+				sdl2.DEFINE_PIXELFORMAT(
+					sdl2.PIXELTYPE_PACKED32,
+					sdl2.PACKEDORDER_RGBA,
+					sdl2.PACKEDLAYOUT_8888,
+					32,
+					4,
+				),
+			)
+			sdl2.SetSurfaceBlendMode(draw_surface, sdl2.BlendMode.NONE)
 		}
 	}
 }
