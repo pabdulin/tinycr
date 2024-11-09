@@ -1,8 +1,12 @@
 package tinycr
 
+import "core:fmt"
 import sdl2 "vendor:sdl2"
 
+
 main :: proc() {
+	cornflower_blue: vector4f : {100. / 255, 149. / 255, 237. / 255, 255. / 255}
+
 	sdl2.Init(sdl2.INIT_VIDEO)
 
 	width := i32(800)
@@ -24,6 +28,7 @@ main :: proc() {
 
 	draw_surface: ^sdl2.Surface = nil
 
+	last_frame_start := sdl2.GetTicks()
 	for running {
 		event: sdl2.Event
 		for sdl2.PollEvent(&event) {
@@ -46,7 +51,7 @@ main :: proc() {
 				mouse_y = event.motion.y
 			}
 		}
-		
+
 		if (draw_surface == nil) {
 			draw_surface = sdl2.CreateRGBSurfaceWithFormat(
 				0,
@@ -55,7 +60,7 @@ main :: proc() {
 				32,
 				sdl2.DEFINE_PIXELFORMAT(
 					sdl2.PIXELTYPE_PACKED32,
-					sdl2.PACKEDORDER_RGBA,
+					sdl2.PACKEDORDER_ABGR, // !!
 					sdl2.PACKEDLAYOUT_8888,
 					32,
 					4,
@@ -64,12 +69,25 @@ main :: proc() {
 			sdl2.SetSurfaceBlendMode(draw_surface, sdl2.BlendMode.NONE)
 		}
 
-		p : [^]u32 = ([^]u32)(draw_surface.pixels)
-		for i :i32= 0; i < width*height; i += 1 {
-			p[i] = 0xdfdfffFF;
+		color_buffer: image_view = {
+			pixels = ([^]color4ub)(draw_surface.pixels),
+			width  = u32(width),
+			height = u32(height),
 		}
 
-		rect: sdl2.Rect = {x = 0, y = 0, w = width, h = height}
+		now := sdl2.GetTicks()
+		dt := now - last_frame_start
+		last_frame_start = now
+		fmt.printfln("Frame time: %d (ms)", dt)
+
+		clear(color_buffer, cornflower_blue)
+
+		rect: sdl2.Rect = {
+			x = 0,
+			y = 0,
+			w = width,
+			h = height,
+		}
 		sdl2.BlitSurface(draw_surface, &rect, sdl2.GetWindowSurface(window), &rect)
 		sdl2.UpdateWindowSurface(window)
 	}
