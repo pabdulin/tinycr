@@ -46,7 +46,7 @@ main :: proc() {
 				mouse_y = event.motion.y
 			}
 		}
-		// (type: u8, order: u8, layout, bits, bytes: u8) -> u32 {
+		
 		if (draw_surface == nil) {
 			draw_surface = sdl2.CreateRGBSurfaceWithFormat(
 				0,
@@ -63,5 +63,14 @@ main :: proc() {
 			)
 			sdl2.SetSurfaceBlendMode(draw_surface, sdl2.BlendMode.NONE)
 		}
+
+		p : [^]u32 = ([^]u32)(draw_surface.pixels)
+		for i :i32= 0; i < width*height; i += 1 {
+			p[i] = 0xdfdfffFF;
+		}
+
+		rect: sdl2.Rect = {x = 0, y = 0, w = width, h = height}
+		sdl2.BlitSurface(draw_surface, &rect, sdl2.GetWindowSurface(window), &rect)
+		sdl2.UpdateWindowSurface(window)
 	}
 }
