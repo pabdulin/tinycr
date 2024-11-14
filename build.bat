@@ -1,5 +1,5 @@
 @ECHO OFF
-SET APPNAME=tinyrc
+SET APPNAME=tinycr
 
 IF NOT EXIST "build" MKDIR "build"
 DEL "build\%APPNAME%.*" /Q
